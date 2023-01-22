@@ -24,7 +24,6 @@ class MahasiswaFactory extends Factory
             'jurusan_id' => $this->faker->randomElement($jurusan),
             'nim' => $this->faker->unique()->numerify('19########'),
             'jenis_kelamin' => $this->faker->randomElement([JenisKelaminEnum::LAKI->value, JenisKelaminEnum::PEREMPUAN->value]),
-            'foto' => 'avatar.jpg'
         ];
     }
 }

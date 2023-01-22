@@ -21,7 +21,6 @@ class CreateMahasiswasTable extends Migration
             $table->foreignIdFor(Jurusan::class)->constrained();
             $table->string('nim')->unique();
             $table->string('jenis_kelamin');
-            $table->string('foto');
             $table->timestamps();
         });
     }

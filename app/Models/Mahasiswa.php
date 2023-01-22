@@ -14,6 +14,16 @@ class Mahasiswa extends Model
         'jurusan_id',
         'nim',
         'jenis_kelamin',
-        'foto',
     ];
+
+    // relation
+    public function User()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function Jurusan()
+    {
+        return $this->belongsTo(Jurusan::class);
+    }
 }

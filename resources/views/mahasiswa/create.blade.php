@@ -69,9 +69,15 @@
                                     <label for="jurusan_id" class="form-control-label">Jurusan</label>
                                     <select class="form-select" name="jurusan_id">
                                         @foreach ($jurusans as $jurusan)
+                                        @if (old('jurusan_id') == $jurusan->id)
+                                        <option value="{{ $jurusan->id }}" selected>{{
+                                            $jurusan->name }}
+                                        </option>
+                                        @else
                                         <option value="{{ $jurusan->id }}">{{
                                             $jurusan->name }}
                                         </option>
+                                        @endif
                                         @endforeach
                                     </select>
                                     @error('jurusan_id')
@@ -85,9 +91,11 @@
                                 <div class="form-group">
                                     <label for="jenis_kelamin" class="form-control-label">Jenis Kelamin</label>
                                     <select class="form-select" name="jenis_kelamin">
-                                        <option value="Laki-Laki">
+                                        <option value="Laki-Laki" {{ old('jenis_kelamin')=='Laki-Laki' ? 'selected' : ''
+                                            }}>
                                             Laki-Laki</option>
-                                        <option value="Perempuan">
+                                        <option value="Perempuan" {{ old('jenis_kelamin')=='Perempuan' ? 'selected' : ''
+                                            }}>
                                             Perempuan</option>
                                     </select>
                                     @error('jenis_kelamin')

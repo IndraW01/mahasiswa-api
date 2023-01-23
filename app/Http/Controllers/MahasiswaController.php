@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Jurusan;
 use App\Models\Mahasiswa;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -44,7 +46,7 @@ class MahasiswaController extends Controller
      */
     public function store(Request $request)
     {
-        $validateMahasiswa = $request->validate([
+        $request->validate([
             'name' => 'required',
             'email' => 'required|email',
             'password' => 'required',
@@ -53,20 +55,30 @@ class MahasiswaController extends Controller
             'jenis_kelamin' => 'required',
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            DB::beginTransaction();
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
-        $user->Mahasiswa()->create([
-            'nim' => $request->nim,
-            'jurusan_id' => $request->jurusan_id,
-            'jenis_kelamin' => $request->jenis_kelamin,
-        ]);
+            $user->Mahasiswa()->create([
+                'nim' => $request->nim,
+                'jurusan_id' => $request->jurusan_id,
+                'jenis_kelamin' => $request->jenis_kelamin,
+            ]);
 
-        Alert::success('Berhasil', "Berhasil Menambah Mahasiswa");
-        return redirect()->route('mahasiswa.index');
+            DB::commit();
+
+            Alert::success('Berhasil', "Berhasil Menambah Mahasiswa");
+            return redirect()->route('mahasiswa.index');
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            Alert::error('Gagal', "Gagal Menambah Mahasiswa");
+            return redirect()->route('mahasiswa.index');
+        }
     }
 
     /**
@@ -92,7 +104,7 @@ class MahasiswaController extends Controller
      */
     public function update(Request $request, Mahasiswa $mahasiswa)
     {
-        $validateMahasiswa = $request->validate([
+        $request->validate([
             'name' => 'required',
             'email' => 'required|email|' . Rule::unique('users', 'email')->ignore($mahasiswa->user_id),
             'nim' => 'required|' . Rule::unique('mahasiswas', 'nim')->ignore($mahasiswa->id),
@@ -100,19 +112,30 @@ class MahasiswaController extends Controller
             'jenis_kelamin' => 'required',
         ]);
 
-        $mahasiswa->User()->update([
-            'name' => $request->name,
-            'email' => $request->email,
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $mahasiswa->update([
-            'nim' => $request->nim,
-            'jurusan_id' => $request->jurusan_id,
-            'jenis_kelamin' => $request->jenis_kelamin,
-        ]);
+            $mahasiswa->User()->update([
+                'name' => $request->name,
+                'email' => $request->email,
+            ]);
 
-        Alert::success('Berhasil', "Berhasil Mengubah Mahasiswa");
-        return redirect()->route('mahasiswa.index');
+            $mahasiswa->update([
+                'nim' => $request->nim,
+                'jurusan_id' => $request->jurusan_id,
+                'jenis_kelamin' => $request->jenis_kelamin,
+            ]);
+
+            DB::commit();
+
+            Alert::success('Berhasil', "Berhasil Mengubah Mahasiswa");
+            return redirect()->route('mahasiswa.index');
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            Alert::success('Gagal', "Gagal Mengubah Mahasiswa");
+            return redirect()->route('mahasiswa.index');
+        }
     }
 
     /**
@@ -123,7 +146,7 @@ class MahasiswaController extends Controller
      */
     public function destroy(Mahasiswa $mahasiswa)
     {
-        $mahasiswa->delete();
+        User::query()->findOrFail($mahasiswa->user_id)->delete();
 
         Alert::success('Berhasil', "Berhasil Menghapus Mahasiswa");
         return redirect()->route('mahasiswa.index');
